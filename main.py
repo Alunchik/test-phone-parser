@@ -27,7 +27,9 @@ def get_phones(text):
 
     # не захватывает номера без кода города
     # reg_exp = r'[7|8]?[\s-]?\(?(\d{3})\)?[\s-]?(\d{3})[\s-]?(\d{2})[\s-]?(\d{2})'
-    reg_exp = r'[7|8]?[\s-]?\(?(\d{3})\)?[\s-]?(\d{3})?[\s-]?(\d{2})[\s-]?(\d{2})[^\d]'
+
+    # захватывает номера без кода города
+    reg_exp = r'[7|8]?[\s-]?\(?(\d{3})?\)?[\s-]?(\d{3})[\s-]?(\d{2})[\s-]?(\d{2})[^\d]'
     groups = re.findall(reg_exp, text)
     return groups
 
@@ -36,9 +38,12 @@ def get_phones(text):
 def format_phones(unformated_nums):
     nums = []
     for num in unformated_nums:
-        number = ''.join(num)
-        if(len(number)==7):
-            number = "495" + number
+        # если нет кода города, добавляем московский
+        if num[0] == '':
+            groups = ('8', '495', num[1], num[2], num[3])
+        else:
+            groups = ('8', num[0], num[1], num[2], num[3])
+        number = ''.join(groups)
         nums.append(number)
     return nums
 
