@@ -1,16 +1,30 @@
-# This is a sample Python script.
+#
+import re
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from bs4 import BeautifulSoup as bs
 
 
-# Press the green button in the gutter to run the script.
+# Получаем необходимый текст со страницы
+def get_page(url):
+    options = Options()
+    options.add_argument('headless')
+
+    browser = webdriver.Chrome(options=options)
+    browser.get(url)
+
+    # Ищем номер телефона только в теле сайта, метаданные и прочее нам не нужны
+
+    body = browser.find_element(By.TAG_NAME, 'body')
+    return body.text
+
+# Получаем из текста номера телефонов
+def get_phones(text):
+    reg_exp = r'^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$'
+    return re.findall(reg_exp, text)
+
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    URL = "https://repetitors.info/"
+    print(get_phones(get_page(URL)))
