@@ -20,11 +20,29 @@ def get_page(url):
     body = browser.find_element(By.TAG_NAME, 'body')
     return body.text
 
+
 # Получаем из текста номера телефонов
 def get_phones(text):
-    reg_exp = r'^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$'
-    return re.findall(reg_exp, text)
+    # Регулярное выражение для поиска всех номеров с кодом +7/8 и без него, в разных форматах. Выделяем в группы значимые цифры номера (без +7/8)
+
+    # не захватывает номера без кода города
+    # reg_exp = r'[7|8]?[\s-]?\(?(\d{3})\)?[\s-]?(\d{3})[\s-]?(\d{2})[\s-]?(\d{2})'
+    reg_exp = r'[7|8]?[\s-]?\(?(\d{3})\)?[\s-]?(\d{3})?[\s-]?(\d{2})[\s-]?(\d{2})[^\d]'
+    groups = re.findall(reg_exp, text)
+    return groups
+
+
+# Принимает кортежи с группами цифр в номерах (3-4 группы цифр)
+def format_phones(unformated_nums):
+    nums = []
+    for num in unformated_nums:
+        number = ''.join(num)
+        if(len(number)==7):
+            number = "495" + number
+        nums.append(number)
+    return nums
+
 
 if __name__ == '__main__':
-    URL = "https://repetitors.info/"
-    print(get_phones(get_page(URL)))
+    URL = "https://targetsms.ru/blog/1074-format-telefonnykh-nomerov"
+    print(format_phones(get_phones(get_page(URL))))
