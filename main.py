@@ -19,6 +19,7 @@ def get_page(url):
             elem.click()
         except Exception:
             pass
+
     # for elem in browser.find_elements(By.CSS_SELECTOR, "button"):
     #     if elem.is_displayed():
     #         try:
@@ -26,23 +27,22 @@ def get_page(url):
     #         except Exception:
     #             pass
 
-    # для поиска номера телефона нам нужно тело запроса
-    body_elem = browser.find_element(By.TAG_NAME, 'body')
-
     # body = body_elem.GetAttribute("innerHTML")
     # soup = bs(body, 'html.parser')
 
+    # для поиска номера телефона нам нужно тело запроса
+    body_elem = browser.find_element(By.TAG_NAME, 'body')
     return body_elem.text
 
 
 # Получаем из текста номера телефонов
 def get_phones(text):
     text = ''.join(('\n', text, '\n'))
-    # Регулярное выражение для поиска всех номеров с кодом +7/8 и без него, в разных форматах. Выделяем в группы значимые цифры номера (без +7/8)
 
     # не захватывает номера без кода города
     # reg_exp = r'[7|8]?[\s-]?\(?(\d{3})\)?[\s-]?(\d{3})[\s-]?(\d{2})[\s-]?(\d{2})'
 
+    # Регулярное выражение для поиска всех номеров с кодом +7/8 и без него, в разных форматах. Выделяем в группы значимые цифры номера (без +7/8)
     # захватывает номера без кода города
     reg_exp = r'\D[7|8]?[\s-]?\(?(\d{3})?\)?[\s-]?(\d{3})[\s-]?(\d{2})[\s-]?(\d{2})\D'
     groups = re.findall(reg_exp, text)
