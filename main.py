@@ -1,5 +1,5 @@
-#
 import re
+import sys
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -8,28 +8,43 @@ from bs4 import BeautifulSoup as bs
 
 
 # Получаем необходимый текст со страницы
+# Selenium управляет браузером и позволяет скрапить динамически-создаваемый контент тоже
 def get_page(url):
     options = Options()
     options.add_argument('headless')
-
     browser = webdriver.Chrome(options=options)
     browser.get(url)
+    for elem in browser.find_elements(By.CSS_SELECTOR, ".phone-number_hidden"):
+        try:
+            elem.click()
+        except Exception:
+            pass
+    # for elem in browser.find_elements(By.CSS_SELECTOR, "button"):
+    #     if elem.is_displayed():
+    #         try:
+    #             elem.click()
+    #         except Exception:
+    #             pass
 
-    # Ищем номер телефона только в теле сайта, метаданные и прочее нам не нужны
+    # для поиска номера телефона нам нужно тело запроса
+    body_elem = browser.find_element(By.TAG_NAME, 'body')
 
-    body = browser.find_element(By.TAG_NAME, 'body')
-    return body.text
+    # body = body_elem.GetAttribute("innerHTML")
+    # soup = bs(body, 'html.parser')
+
+    return body_elem.text
 
 
 # Получаем из текста номера телефонов
 def get_phones(text):
+    text = ''.join(('\n', text, '\n'))
     # Регулярное выражение для поиска всех номеров с кодом +7/8 и без него, в разных форматах. Выделяем в группы значимые цифры номера (без +7/8)
 
     # не захватывает номера без кода города
     # reg_exp = r'[7|8]?[\s-]?\(?(\d{3})\)?[\s-]?(\d{3})[\s-]?(\d{2})[\s-]?(\d{2})'
 
     # захватывает номера без кода города
-    reg_exp = r'[7|8]?[\s-]?\(?(\d{3})?\)?[\s-]?(\d{3})[\s-]?(\d{2})[\s-]?(\d{2})[^\d]'
+    reg_exp = r'\D[7|8]?[\s-]?\(?(\d{3})?\)?[\s-]?(\d{3})[\s-]?(\d{2})[\s-]?(\d{2})\D'
     groups = re.findall(reg_exp, text)
     return groups
 
@@ -48,6 +63,12 @@ def format_phones(unformated_nums):
     return nums
 
 
+# URL адрес передается как аргумент командной строки
+
 if __name__ == '__main__':
-    URL = "https://targetsms.ru/blog/1074-format-telefonnykh-nomerov"
+    URL = sys.argv[1]
+    # Получаем контент со страницы в т.ч. и динамически сгенерированный
+    # Далее ищем номера регулярным выражением, после чего приводим к стандартному виду
+    # Результатом является лист номеров, который выводится в консоль
+
     print(format_phones(get_phones(get_page(URL))))
